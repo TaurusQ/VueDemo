@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Todo List</title>
+	<!-- <script src='vue.js'></script> -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.js"></script>
+	<script src="https://code.jquery.com/jquery.min.js"></script>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<div id="app" class="container">
+		<!-- 
+		事件冒泡和事件捕获：
+		事件冒泡：事件开始时由具体的元素接收，然后逐级向上传播到较为不具体的节点；主要适用于IE
+		事件捕获：是不太具体的节点应该更早接收到事件，而具体的节点应该后接收到事件，适用于其它浏览器
+
+		所以这里应该阻止form提交表单
+		-->
+		<form class='form-inline' v-on:submit.prevent style="padding-bottom: 20px;">
+			<legend>Todo List</legend>
+			<div class='form-group'>
+				<label for="content">New Todo:</label>
+				<input class="form-control" name='content' type="text" placeholder="please input the content" v-on:keyup.enter='createTodo' v-model='content'>
+				<button class="btn btn-primary" v-on:click='createTodo'>Create Todo</button>
+			</div>
+		</form>
+
+		<template v-if='todos == ""'>
+			<div class="alert alert-info" role="alert">no todos</div>
+		</template>
+		<template v-else>
+			<div class="alert alert-info" role="alert">total:{{ todos.length }} todos</div>
+			<table class="table table-hover table-striped">
+				<thead>
+					<th>index</th>
+					<th>content</th>
+					<th>create date</th>
+					<th>update date</th>
+					<th>operation</th>
+				</thead>
+				<tbody >
+					<tr v-for='(todo,index) in todos'>
+						<!-- 点击编辑按钮时 -->
+						<template v-if='todo.edit'>
+							<th>{{ index }}</th>
+							<th>
+								<input type="text" v-model='update_content' v-on:keyup.enter='saveTodo(todo)'>
+							</th>
+							<th>
+								{{ todo.create_date }}
+							</th>
+							<th>
+								{{ todo.update_date }}
+							</th>
+							<th>
+								<a href="#" v-on:click='cancelSave(todo)'>cancel</a>
+								<a href="#" v-on:click='saveTodo(todo)'>save</a>
+							</th>
+						</template>
+						
+						<!-- 不是编辑状态时 -->
+						<template v-else>
+							<th>{{ index }}</th>
+							<th>
+								<del v-if='todo.complete'>{{ todo.content }}</del>
+								<span v-else>{{ todo.content }}</span>
+							</th>
+							<th>
+								{{ todo.create_date }}
+							</th>
+							<th>
+								{{ todo.update_date }}
+							</th>
+							<th>
+								<a href="#" v-on:click='deleteTodo(todo)'>delete</a>
+								<a href="#" v-on:click='completeTodo(todo)'>Toggle Complete</a>
+								<a href="#" v-on:click='editTodo(todo)'>edit</a>
+							</th>
+						</template>
+						
+					</tr>
+				</tbody>
+			</table>
+		</template>
+		
+	</div>
+</body>
+</html>
+<script>
+	function getInitalTodo(content){
+		return {
+			content:content,
+			status:true,
+			create_date:new Date().toLocaleString(),
+			update_date:new Date().toLocaleString(),
+			complete:false,
+			edit:false
+		}
+	}
+
+	var vm = new Vue({
+		el:'#app',
+		data:{
+			content:'',
+			update_content:'',
+			todos:[{
+				content:'this is the content A',
+				status:true,
+				create_date:'2018/5/30 上午11:22:34',
+				update_date:'2018/5/30 上午11:22:34',
+				complete:false,
+				edit:false
+			},{
+				content:'this is the content B',
+				status:false,
+				create_date:'2018/5/30 上午11:22:34',
+				update_date:'2018/5/30 上午11:22:34',
+				complete:false,
+				edit:false
+			}]
+		},
+		methods:{
+			deleteTodo:function(todo){
+				this.todos.splice(todo,1); 只删除数组中的，没有删除localStorage中的
+			},
+			//创建todo的时候，保存到localStorage中
+			createTodo:function(){
+				if(this.content){
+					var todo = getInitalTodo(this.content);
+					//添加到本地
+					this.todos.splice(todos_length,1,todo);
+					this.content = '';
+				}
+			},
+			
+			/**
+				动态修改数组中对象的内容
+			*/
+			completeTodo:function(todo){
+				todo.complete = !todo.complete;
+				todo.update_date = new Date().toLocaleString();
+			},
+			editTodo:function(todo){
+				var editable = true;
+				//判断是否存在其它的todo处于编辑状态
+				this.todos.some(function(todo,index,arr){
+					//forEach无法通过return false跳出循环，可以通过try-catch
+					if(value.edit){
+						editable = false;
+						alert('please complete edit other todo');
+						return false;
+					}
+				});
+
+				if(editable){
+					todo.edit = true;
+					this.update_content = todo.content;
+				}
+			},
+			/**
+				保存编辑
+			*/
+			saveTodo:function(todo){
+				//判断内容是否有修改
+				if(todo.content == this.update_content){
+					todo.edit = false;
+				}else{
+					todo.content = this.update_content;
+					todo.edit = false;
+					todo.update_date = new Date().toLocaleString();
+				}
+			},
+			cancelSave:function(todo){
+				todo.edit = false;
+			}
+		}
+	});
+</script>
