@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Todo List</title>
 	<!-- <script src='vue.js'></script> -->
+    
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.js"></script>
 	<script src="https://code.jquery.com/jquery.min.js"></script>
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -15,7 +16,6 @@
 		事件冒泡和事件捕获：
 		事件冒泡：事件开始时由具体的元素接收，然后逐级向上传播到较为不具体的节点；主要适用于IE
 		事件捕获：是不太具体的节点应该更早接收到事件，而具体的节点应该后接收到事件，适用于其它浏览器
-
 		所以这里应该阻止form提交表单
 		-->
 		<form class='form-inline' v-on:submit.prevent style="padding-bottom: 20px;">
@@ -99,7 +99,6 @@
 			edit:false
 		}
 	}
-
 	var vm = new Vue({
 		el:'#app',
 		data:{
@@ -123,13 +122,14 @@
 		},
 		methods:{
 			deleteTodo:function(todo){
-				this.todos.splice(todo,1); 只删除数组中的，没有删除localStorage中的
+				this.todos.splice(todo,1); //只删除数组中的，没有删除localStorage中的
 			},
 			//创建todo的时候，保存到localStorage中
 			createTodo:function(){
 				if(this.content){
 					var todo = getInitalTodo(this.content);
-					//添加到本地
+					var todos_length = this.todos?this.todos.length:0;
+                    //添加到本地
 					this.todos.splice(todos_length,1,todo);
 					this.content = '';
 				}
@@ -147,13 +147,12 @@
 				//判断是否存在其它的todo处于编辑状态
 				this.todos.some(function(todo,index,arr){
 					//forEach无法通过return false跳出循环，可以通过try-catch
-					if(value.edit){
+					if(todo.edit){
 						editable = false;
 						alert('please complete edit other todo');
 						return false;
 					}
 				});
-
 				if(editable){
 					todo.edit = true;
 					this.update_content = todo.content;
